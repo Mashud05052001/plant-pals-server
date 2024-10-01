@@ -1,0 +1,14 @@
+Using multer-storage-cloudinary the uploading image full process is below.
+  1. When we hit the route the procedure is
+     i.    Check auth validation or not
+     ii.   Upload single / multiple images on cloudinary using multer-storage-cloudinary.
+     iii.  Validate the single image/multiple image 
+     iv.   Parse the body elements
+     v.    Validate the body elements
+     vi.   Navigate to the controller
+     
+  2. At first when we upload the single image / images the multer-storage-cloudinary autometically upload it to the cloudinary.
+  3. After uploading successfully we get the image file from cloudinary. 
+  4. Based on this image file we run a validation & if the image validation failed it will not goes to forward rather than goes to the globalErrorHandler.
+  5. Then if error comes to global error handler that means there are req.file / req.files must be present. 
+  6. Now we check if they present then based on the single or multiple images delete single image or multiple images cause before validation the image already uploaded into cloudinary
