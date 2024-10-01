@@ -29,9 +29,11 @@ const userSchema = new Schema<TUser, TUserMethods>(
     },
     profilePicture: {
       type: String,
+      default: '',
     },
     coverPicture: {
       type: String,
+      default: '',
     },
     myPosts: {
       type: [Schema.Types.ObjectId],
