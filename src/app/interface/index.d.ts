@@ -1,11 +1,11 @@
 import { JwtPayload } from 'jsonwebtoken';
-import { TUser } from '../modules/user/user.interface';
+import { TUserResponse } from '../modules/user/user.interface';
 
 declare global {
   namespace Express {
     interface Request {
       user: JwtPayload;
-      dbUser: TUser;
+      dbUser: TUserResponse;
     }
   }
 }

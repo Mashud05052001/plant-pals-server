@@ -1,7 +1,9 @@
 // This image validation only works if use multer-storage-cloudinary to upload image in cloudinary
 import { z } from 'zod';
 
-const MAX_UPLOAD_SIZE = 1024 * 1024 * 3; // 3MB
+export const IMAGE_MAX_UPLOAD_SIZE = 1024 * 1024 * 3; // 3MB
+export const IMAGE_MAX_IMAGE_COUNT = 4;
+
 const ACCEPTED_FILE_TYPES = [
   'image/png',
   'image/jpeg',
@@ -20,18 +22,24 @@ const ImageSchema = z.object({
   size: z
     .number()
     .refine(
-      (size) => size <= MAX_UPLOAD_SIZE,
+      (size) => size <= IMAGE_MAX_UPLOAD_SIZE,
       'File size must be less than 3MB',
     ),
   filename: z.string(),
 });
 
-export const ImageFilesArrayZodSchema = z.object({
-  files: z.record(z.string(), z.array(ImageSchema)).refine((files) => {
-    return Object.keys(files).length > 0;
-  }, 'Image is required'),
+export const ImageFilesArrayValidationSchema = z.object({
+  files: z
+    .record(z.string(), z.array(ImageSchema))
+    .refine((files) => {
+      return Object.keys(files).length > 0;
+    }, 'Image is required')
+    .refine((files) => {
+      const imageArray = Object.values(files).flat();
+      return imageArray.length <= IMAGE_MAX_IMAGE_COUNT;
+    }, `You can upload a maximum of ${IMAGE_MAX_IMAGE_COUNT} images.`),
 });
 
-export const ImageFileZodSchema = z.object({
+export const ImageFileValidationSchema = z.object({
   file: ImageSchema.refine((file) => file !== undefined, 'Image is required'),
 });

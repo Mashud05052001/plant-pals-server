@@ -23,6 +23,7 @@ const auth = (userWithPassword: boolean, ...requiredRoles: TUserRoles[]) => {
       throw new AppError(httpStatus.UNAUTHORIZED, 'Token is missing!');
     }
     const decoded = jwtHelper.verifyAccessToken(token) as JwtPayload;
+
     if (requiredRoles && !requiredRoles.includes(decoded?.role)) {
       throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized');
     }

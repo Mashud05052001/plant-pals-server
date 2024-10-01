@@ -1,13 +1,13 @@
 import httpStatus from 'http-status';
 
 import catchAsync from '../../utils/catchAsync';
-import { UserService } from './auth.service';
+import { AuthService } from './auth.service';
 import sendResponse from '../../utils/sendResponse';
 
 const registerUser = catchAsync(async (req, res) => {
   const data = req.body;
 
-  const result = await UserService.registerUser(data);
+  const result = await AuthService.registerUser(data);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -19,7 +19,7 @@ const registerUser = catchAsync(async (req, res) => {
 
 const loginUser = catchAsync(async (req, res) => {
   const data = req.body;
-  const result = await UserService.loginUser(data);
+  const result = await AuthService.loginUser(data);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -30,7 +30,7 @@ const loginUser = catchAsync(async (req, res) => {
 });
 
 const changePassword = catchAsync(async (req, res) => {
-  const result = await UserService.changePassword(
+  const result = await AuthService.changePassword(
     req.user,
     req.dbUser,
     req.body,
@@ -45,7 +45,7 @@ const changePassword = catchAsync(async (req, res) => {
 
 const accessToken = catchAsync(async (req, res) => {
   const { refreshToken } = req.cookies;
-  const result = await UserService.accessToken(refreshToken);
+  const result = await AuthService.accessToken(refreshToken);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -55,7 +55,7 @@ const accessToken = catchAsync(async (req, res) => {
 });
 
 const forgetPassword = catchAsync(async (req, res) => {
-  const result = await UserService.forgetPassword(req.body);
+  const result = await AuthService.forgetPassword(req.body);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -65,7 +65,7 @@ const forgetPassword = catchAsync(async (req, res) => {
 });
 
 const checkResetCode = catchAsync(async (req, res) => {
-  const result = await UserService.checkResetCode(req.body);
+  const result = await AuthService.checkResetCode(req.body);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -75,7 +75,7 @@ const checkResetCode = catchAsync(async (req, res) => {
 });
 
 const resetPassword = catchAsync(async (req, res) => {
-  const result = await UserService.resetPassword(req.body);
+  const result = await AuthService.resetPassword(req.body);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -85,7 +85,7 @@ const resetPassword = catchAsync(async (req, res) => {
   });
 });
 
-export const UserController = {
+export const AuthController = {
   registerUser,
   loginUser,
   changePassword,

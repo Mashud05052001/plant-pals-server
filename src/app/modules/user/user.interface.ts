@@ -1,4 +1,4 @@
-import { Model, Types } from 'mongoose';
+import { Model, ObjectId, Types } from 'mongoose';
 
 export type TUserRoles = 'USER' | 'ADMIN';
 
@@ -24,6 +24,12 @@ export type TResetPassword = { code: string } & Pick<
   'email' | 'password'
 >;
 
+export type TUserResponse = {
+  _id: ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+} & TUser;
+
 export type TUser = {
   name: string;
   email: string;
@@ -44,7 +50,7 @@ export type TUser = {
 };
 
 export interface TUserMethods extends Model<TUser> {
-  findUser(email: string, isPasswordRequired: boolean): Promise<TUser>;
+  findUser(email: string, isPasswordRequired: boolean): Promise<TUserResponse>;
   isPasswordValid(
     plainTextPassword: string,
     hashedPassword: string,

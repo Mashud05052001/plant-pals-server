@@ -1,4 +1,4 @@
-import { model, Schema, Types } from 'mongoose';
+import { model, Schema } from 'mongoose';
 import { TUser, TUserMethods } from './user.interface';
 import { userRolesArray } from './user.constant';
 import { bcryptHelper } from '../../utils/bcryptPassword';
@@ -34,20 +34,24 @@ const userSchema = new Schema<TUser, TUserMethods>(
       type: String,
     },
     myPosts: {
-      type: [Types.ObjectId],
+      type: [Schema.Types.ObjectId],
       ref: 'Post',
+      default: [],
     },
     favouritePosts: {
-      type: [Types.ObjectId],
+      type: [Schema.Types.ObjectId],
       ref: 'Post',
+      default: [],
     },
     following: {
-      type: [Types.ObjectId],
+      type: [Schema.Types.ObjectId],
       ref: 'User',
+      default: [],
     },
     followers: {
-      type: [Types.ObjectId],
+      type: [Schema.Types.ObjectId],
       ref: 'User',
+      default: [],
     },
     isVerified: {
       type: Boolean,

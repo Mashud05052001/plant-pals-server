@@ -11,21 +11,11 @@ import {
   TLoginUser,
   TRegisterUser,
   TResetPassword,
-  TUser,
+  TUserResponse,
 } from '../user/user.interface';
 import { User } from '../user/user.model';
 import { generatePasswordResetEmail } from './auth.constant';
 import { generateSixDigitCode } from './auth.utils';
-
-/*
-Register User
-  1. Check if the user already exists with the provided email.
-  2. If the user exists, throw a conflict error.
-  3. Create a new user with the provided details.
-  4. Prepare JWT payload for access and refresh tokens.
-  5. Generate access and refresh tokens.
-  6. Return the generated tokens.
-*/
 
 const registerUser = async (payload: TRegisterUser) => {
   const user = await User.findUser(payload.email, false);
@@ -35,6 +25,7 @@ const registerUser = async (payload: TRegisterUser) => {
       'This email already have an account in our system. Try to login!',
     );
   }
+
   await User.create(payload);
 
   const jwtPayload: TJwtPayload = {
@@ -47,17 +38,6 @@ const registerUser = async (payload: TRegisterUser) => {
 
   return { accessToken, refreshToken };
 };
-
-/*
-Login User
-  1. Find the user by email.
-  2. If the user does not exist, throw an error indicating the email is not found.
-  3. Validate the provided password against the stored password.
-  4. If the password is incorrect, throw an error.
-  5. Prepare JWT payload for access and refresh tokens.
-  6. Generate access and refresh tokens.
-  7. Return the generated tokens.
-*/
 
 const loginUser = async (payload: TLoginUser) => {
   const user = await User.findUser(payload.email, true);
@@ -86,21 +66,9 @@ const loginUser = async (payload: TLoginUser) => {
   return { accessToken, refreshToken };
 };
 
-/*
-Change Password
-***  Belowing 2 steps already done in auth middleware & from there we get the user database data
-  1. Find the user by email from the JWT payload.
-  2. If the user does not exist, throw an error.
-  3. Validate the old password against the stored password.
-  4. If the old password is incorrect, throw an error.
-  5. Hash the new password.
-  6. Update the user's password in the database.
-  7. Return a success message indicating the password has been changed.
-*/
-
 const changePassword = async (
   jwtUser: TJwtPayload,
-  user: TUser,
+  user: TUserResponse,
   payload: TChangePassword,
 ) => {
   if (
@@ -133,16 +101,6 @@ const changePassword = async (
   return 'Password changed successfully';
 };
 
-/*
-Access Token
-  1. Verify the provided refresh token.
-  2. Find the user by email from the decoded token.
-  3. If the user does not exist, throw an error.
-  4. Prepare JWT payload for a new access token.
-  5. Generate a new access token.
-  6. Return the new access token.
-*/
-
 const accessToken = async (refreshToken: string) => {
   const decodedData = jwtHelper.verifyRefrestToken(refreshToken);
 
@@ -160,16 +118,6 @@ const accessToken = async (refreshToken: string) => {
 
   return accessToken;
 };
-
-/*
-Forget Password
-  1. Find the user by email.
-  2. If the user does not exist, throw an error indicating the email is not registered.
-  3. Generate a 6-digit reset password code.
-  4. Set the reset password code and current date in the user record.
-  5. Send a password reset email with the generated code.
-  6. Return a success message indicating the password reset request has been sent.
-*/
 
 const forgetPassword = async (payload: TForgetPassword) => {
   const user = await User.findOne({
@@ -200,15 +148,6 @@ const forgetPassword = async (payload: TForgetPassword) => {
   return 'Password reset request send successfully';
 };
 
-/*
-Check Reset Password 6 digid Code
-  1. Validate the email and check if the user exists.
-  2. Ensure reset password code and timestamp are present. 
-  3. Validate the provided reset password code.
-  4. Check if the reset password code has expired.
-     a. If expired, clear the reset password code and timestamp from the database.
-     b. Throw an error indicating the code has expired.
-*/
 const checkResetCode = async (payload: TCheckResetCode) => {
   const user = await User.findOne({ email: payload.email }).select(
     '+resetPasswordCode +resetPasswordAt',
@@ -244,19 +183,6 @@ const checkResetCode = async (payload: TCheckResetCode) => {
 
   return 'Reset code is valid';
 };
-
-/*
-Reset Password
-  1. Validate the email and check if the user exists.
-  2. Ensure reset password code and timestamp are present. 
-  3. Check if the reset password code has expired.
-     a. If expired, clear the reset password code and timestamp from the database.
-     b. Throw an error indicating the code has expired.
-  4. Validate that the new password is not the same as the old password.
-  5. Hash the new password.
-  6. Update the user's password and clear the reset password code and timestamp.
-  7. Return a success message indicating the password has been reset.
-*/
 
 const resetPassword = async (payload: TResetPassword) => {
   const user = await User.findOne({ email: payload?.email }).select(
@@ -316,7 +242,7 @@ const resetPassword = async (payload: TResetPassword) => {
   return 'Password reset successful. Please login to continue';
 };
 
-export const UserService = {
+export const AuthService = {
   registerUser,
   loginUser,
   changePassword,

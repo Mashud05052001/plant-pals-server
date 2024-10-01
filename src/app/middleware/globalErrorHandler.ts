@@ -13,6 +13,7 @@ import {
   deleteSingleImageFromCloudinary,
 } from '../utils/deleteImage';
 import { TImageFile, TImageFiles } from '../interface/image.interface';
+import handleMulterError from '../errors/handleMulterError';
 
 const globalErrorHandler: ErrorRequestHandler = async (err, req, res, next) => {
   let statusCode = 500,
@@ -38,6 +39,7 @@ const globalErrorHandler: ErrorRequestHandler = async (err, req, res, next) => {
     else if (err?.name === 'ValidationError') return handleValidationError(err);
     else if (err?.name === 'CastError') return handleCastError(err);
     else if (err.code === 11000) return handleDuplicateError(err);
+    else if (err.name === 'MulterError') return handleMulterError(err);
     return null;
   };
   const modifiedError = getModifiedError();
@@ -59,7 +61,7 @@ const globalErrorHandler: ErrorRequestHandler = async (err, req, res, next) => {
     success: false,
     message,
     errorSources,
-    // originalError : err,  // By seeing here error we can handle the error with specific code & get the message. We cannot get proper error using console.log(err)
+    originalError: err, // By seeing here error we can handle the error with specific code & get the message. We cannot get proper error using console.log(err)
     stack: config.node_env === 'development' ? err?.stack : null,
   });
 };

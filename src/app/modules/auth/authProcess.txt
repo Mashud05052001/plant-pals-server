@@ -1,0 +1,71 @@
+Register User
+  1. Check if the user already exists with the provided email.
+  2. If the user exists, throw a conflict error.
+  3. Create a new user with the provided details.
+  4. Prepare JWT payload for access and refresh tokens.
+  5. Generate access and refresh tokens.
+  6. Return the generated tokens.
+
+
+Login User
+  1. Find the user by email.
+  2. If the user does not exist, throw an error indicating the email is not found.
+  3. Validate the provided password against the stored password.
+  4. If the password is incorrect, throw an error.
+  5. Prepare JWT payload for access and refresh tokens.
+  6. Generate access and refresh tokens.
+  7. Return the generated tokens.
+
+
+Change Password
+***  Belowing 2 steps already done in auth middleware & from there we get the user database data
+  1. Find the user by email from the JWT payload.
+  2. If the user does not exist, throw an error.
+  3. Validate the old password against the stored password.
+  4. If the old password is incorrect, throw an error.
+  5. Hash the new password.
+  6. Update the user's password in the database.
+  7. Return a success message indicating the password has been changed.
+
+  
+
+Access Token
+  1. Verify the provided refresh token.
+  2. Find the user by email from the decoded token.
+  3. If the user does not exist, throw an error.
+  4. Prepare JWT payload for a new access token.
+  5. Generate a new access token.
+  6. Return the new access token.
+
+  
+
+Forget Password
+  1. Find the user by email.
+  2. If the user does not exist, throw an error indicating the email is not registered.
+  3. Generate a 6-digit reset password code.
+  4. Set the reset password code and current date in the user record.
+  5. Send a password reset email with the generated code.
+  6. Return a success message indicating the password reset request has been sent.
+
+  
+
+Check Reset Password 6 digid Code
+  1. Validate the email and check if the user exists.
+  2. Ensure reset password code and timestamp are present. 
+  3. Validate the provided reset password code.
+  4. Check if the reset password code has expired.
+     a. If expired, clear the reset password code and timestamp from the database.
+     b. Throw an error indicating the code has expired.
+
+     
+
+Reset Password
+  1. Validate the email and check if the user exists.
+  2. Ensure reset password code and timestamp are present. 
+  3. Check if the reset password code has expired.
+     a. If expired, clear the reset password code and timestamp from the database.
+     b. Throw an error indicating the code has expired.
+  4. Validate that the new password is not the same as the old password.
+  5. Hash the new password.
+  6. Update the user's password and clear the reset password code and timestamp.
+  7. Return a success message indicating the password has been reset.

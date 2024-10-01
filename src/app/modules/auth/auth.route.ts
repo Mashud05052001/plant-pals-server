@@ -1,54 +1,54 @@
 import { Router } from 'express';
-import { UserController } from './auth.scontroller';
+import { AuthController } from './auth.scontroller';
 import auth from '../../middleware/auth';
 import validateRequest, {
   validateRequestCookies,
 } from '../../middleware/validateRequest';
-import { UserValidation } from './auth.validation';
+import { AuthValidation } from './auth.validation';
 
 const router = Router();
 
 router.post(
   '/register',
-  validateRequest(UserValidation.registerValidationSchema),
-  UserController.registerUser,
+  validateRequest(AuthValidation.registerValidationSchema),
+  AuthController.registerUser,
 );
 
 router.post(
   '/login',
-  validateRequest(UserValidation.loginValidationSchema),
-  UserController.loginUser,
+  validateRequest(AuthValidation.loginValidationSchema),
+  AuthController.loginUser,
 );
 
 router.post(
   '/change-password',
-  validateRequest(UserValidation.changePasswordValidationSchema),
+  validateRequest(AuthValidation.changePasswordValidationSchema),
   auth(true, 'ADMIN', 'USER'),
-  UserController.changePassword,
+  AuthController.changePassword,
 );
 
 router.post(
   '/refresh-token',
-  validateRequestCookies(UserValidation.accessTokenValidationSchema),
-  UserController.accessToken,
+  validateRequestCookies(AuthValidation.accessTokenValidationSchema),
+  AuthController.accessToken,
 );
 
 router.post(
   '/forget-password',
-  validateRequest(UserValidation.forgetPasswordValidationSchema),
-  UserController.forgetPassword,
+  validateRequest(AuthValidation.forgetPasswordValidationSchema),
+  AuthController.forgetPassword,
 );
 
 router.post(
   '/check-reset-code',
-  validateRequest(UserValidation.checkResetCodeValidationSchema),
-  UserController.checkResetCode,
+  validateRequest(AuthValidation.checkResetCodeValidationSchema),
+  AuthController.checkResetCode,
 );
 
 router.post(
   '/reset-password',
-  validateRequest(UserValidation.resetPasswordValidationSchema),
-  UserController.resetPassword,
+  validateRequest(AuthValidation.resetPasswordValidationSchema),
+  AuthController.resetPassword,
 );
 
 export const AuthRoutes = router;
