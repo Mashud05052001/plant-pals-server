@@ -76,6 +76,10 @@ const checkResetCodeValidationSchema = z.object({
 });
 const resetPasswordValidationSchema = z.object({
   body: z.object({
+    code: z
+      .string()
+      .length(6, 'Reset code must be exactly 6 digits.')
+      .regex(/^\d{6}$/, 'Reset code must contain only digits.'),
     email: z
       .string({ required_error: 'User email is required' })
       .email({ message: 'Provide a valid email' }),

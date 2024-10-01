@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser';
 import notFound from './app/middleware/notFound';
 import express, { Application, Request, Response } from 'express';
 import globalErrorHandler from './app/middleware/globalErrorHandler';
+import { AllRoutes } from './app/routes';
 
 const app: Application = express();
 
@@ -25,8 +26,7 @@ app.get('/', (req: Request, res: Response) => {
   });
 });
 
-// all routes => uncommend it after creating a module & add a route inside of the app -> routes -> index.ts
-// app.use('/api', AllRoutes);
+app.use('/api/v1', AllRoutes);
 // global error handler
 app.use(globalErrorHandler);
 // not found

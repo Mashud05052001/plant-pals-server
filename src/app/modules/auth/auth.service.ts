@@ -1,5 +1,9 @@
 import httpStatus from 'http-status';
+import config from '../../config';
 import AppError from '../../errors/AppError';
+import { bcryptHelper } from '../../utils/bcryptPassword';
+import { EmailHelper } from '../../utils/emailSender';
+import { jwtHelper, TJwtPayload } from '../../utils/jwtToken';
 import {
   TChangePassword,
   TCheckResetCode,
@@ -7,14 +11,11 @@ import {
   TLoginUser,
   TRegisterUser,
   TResetPassword,
+  TUser,
 } from '../user/user.interface';
 import { User } from '../user/user.model';
-import { jwtHelper, TJwtPayload } from '../../utils/jwtToken';
-import { bcryptHelper } from '../../utils/bcryptPassword';
-import { EmailHelper } from '../../utils/emailSender';
-import { generateSixDigitCode } from './auth.utils';
 import { generatePasswordResetEmail } from './auth.constant';
-import config from '../../config';
+import { generateSixDigitCode } from './auth.utils';
 
 /*
 Register User
@@ -87,6 +88,7 @@ const loginUser = async (payload: TLoginUser) => {
 
 /*
 Change Password
+***  Belowing 2 steps already done in auth middleware & from there we get the user database data
   1. Find the user by email from the JWT payload.
   2. If the user does not exist, throw an error.
   3. Validate the old password against the stored password.
@@ -98,16 +100,9 @@ Change Password
 
 const changePassword = async (
   jwtUser: TJwtPayload,
+  user: TUser,
   payload: TChangePassword,
 ) => {
-  const user = await User.findUser(jwtUser?.email, true);
-  if (!user) {
-    throw new AppError(
-      httpStatus.CONFLICT,
-      'This email is not found. Failed to change password!',
-    );
-  }
-
   if (
     payload?.oldPassword &&
     user?.password &&
@@ -115,9 +110,19 @@ const changePassword = async (
   ) {
     throw new AppError(httpStatus.FORBIDDEN, 'Incorrect old password');
   }
+
+  if (payload?.newPassword === payload?.oldPassword) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      'New password cannot be same with old one',
+    );
+  }
+
   const hashedNewPassword = await bcryptHelper.createHashedPassword(
     payload?.newPassword,
   );
+
+  user.password = hashedNewPassword;
 
   await User.findOneAndUpdate(
     { email: jwtUser?.email },
@@ -177,14 +182,15 @@ const forgetPassword = async (payload: TForgetPassword) => {
     );
   }
   const sixDigitCode = generateSixDigitCode();
-  user.resetPasswordCode = sixDigitCode;
-  user.resetPasswordAt = new Date();
-  await user.save();
-
+  await User.findByIdAndUpdate(user?._id, {
+    resetPasswordCode: sixDigitCode,
+    resetPasswordAt: new Date(),
+  });
   const passwordResetHtml = generatePasswordResetEmail(
     user?.name,
     sixDigitCode,
   );
+
   await EmailHelper.sendEmail(
     user.email,
     passwordResetHtml,
@@ -254,7 +260,7 @@ Reset Password
 
 const resetPassword = async (payload: TResetPassword) => {
   const user = await User.findOne({ email: payload?.email }).select(
-    '+resetPasswordCode +resetPasswordAt',
+    '+password +resetPasswordCode +resetPasswordAt',
   );
   if (!user) {
     throw new AppError(httpStatus.NOT_FOUND, 'This email is not found.');
@@ -267,14 +273,20 @@ const resetPassword = async (payload: TResetPassword) => {
     );
   }
 
+  if (user.resetPasswordCode !== payload.code) {
+    throw new AppError(httpStatus.FORBIDDEN, 'The code is incorrect.');
+  }
   const tenMinutesInMillis = 10 * 60 * 1000;
   const codeExpirationTime =
     new Date(user.resetPasswordAt).getTime() + tenMinutesInMillis;
   if (Date.now() > codeExpirationTime) {
     if (user?.resetPasswordAt || user?.resetPasswordCode) {
-      user.resetPasswordCode = undefined;
-      user.resetPasswordAt = undefined;
-      await user.save();
+      await User.findByIdAndUpdate(user?._id, {
+        $unset: {
+          resetPasswordCode: 1,
+          resetPasswordAt: 1,
+        },
+      });
     }
     throw new AppError(httpStatus.FORBIDDEN, 'The code has been expired.');
   }
@@ -289,12 +301,17 @@ const resetPassword = async (payload: TResetPassword) => {
   const hashedNewPassword = await bcryptHelper.createHashedPassword(
     payload.password,
   );
-  user.password = hashedNewPassword;
-  user.resetPasswordCode = undefined;
-  user.resetPasswordAt = undefined;
-  user.changePasswordAt = new Date();
 
-  await user.save();
+  await User.findByIdAndUpdate(user?._id, {
+    $unset: {
+      resetPasswordCode: 1,
+      resetPasswordAt: 1,
+    },
+    $set: {
+      password: hashedNewPassword,
+      changePasswordAt: new Date(),
+    },
+  });
 
   return 'Password reset successful. Please login to continue';
 };

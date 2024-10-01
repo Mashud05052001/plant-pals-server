@@ -10,10 +10,10 @@ const createHashedPassword = async (password: string) => {
 };
 
 const compareHashedPasswordWithPlainText = async (
-  hashedPassword: string,
   plainText: string,
+  hashedPassword: string,
 ) => {
-  const result = await bcrypt.compare(hashedPassword, plainText);
+  const result = await bcrypt.compare(plainText, hashedPassword);
   return result;
 };
 

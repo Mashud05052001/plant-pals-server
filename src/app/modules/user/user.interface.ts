@@ -19,7 +19,10 @@ export type TLoginUser = Pick<TUser, 'email' | 'password'>;
 export type TForgetPassword = Pick<TUser, 'email'>;
 export type TCheckResetCode = { code: string } & Pick<TUser, 'email'>;
 
-export type TResetPassword = Pick<TUser, 'email' | 'password'>;
+export type TResetPassword = { code: string } & Pick<
+  TUser,
+  'email' | 'password'
+>;
 
 export type TUser = {
   name: string;

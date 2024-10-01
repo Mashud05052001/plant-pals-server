@@ -99,10 +99,11 @@ userSchema.statics.isPasswordValid = async function (
   hashedPassword: string,
 ) {
   return await bcryptHelper.compareHashedPasswordWithPlainText(
-    hashedPassword,
     plainTextPassword,
+    hashedPassword,
   );
 };
+
 userSchema.statics.isJwtIssueBeforePasswordChange = function (
   jwtIssuedTime: number,
   passwordChangedDate: Date,

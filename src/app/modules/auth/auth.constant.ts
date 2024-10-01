@@ -20,7 +20,7 @@ export const generatePasswordResetEmail = (
 
             .container {
                 max-width: 600px;
-                margin: 50px auto;
+                margin: 20px auto;
                 background-color: #ffffff;
                 padding: 40px 50px;
                 border-radius: 10px;
@@ -82,92 +82,24 @@ export const generatePasswordResetEmail = (
             .footer {
                 text-align: center;
                 font-size: 14px;
-                color: #aaaaaa;
+                color: #000000e2;
                 margin-top: 20px;
             }
 
-            .toast {
-                visibility: hidden;
-                min-width: 250px;
-                background-color: #c0c0c06f;
-                color: black;
-                font-weight: bold;
-                text-align: center;
-                border-radius: 4px;
-                padding: 16px;
-                position: fixed;
-                z-index: 10;
-                right: 20px;
-                top: 20px;
-                font-size: 17px;
-            }
-
-            .toast.show {
-                visibility: visible;
-                -webkit-animation: fadein 0.5s, fadeout 0.5s 2s;
-                animation: fadein 0.5s, fadeout 0.5s 2s;
-            }
-
-            @-webkit-keyframes fadein {
-                from {
-                    top: 0;
-                    opacity: 0;
-                }
-
-                to {
-                    top: 20px;
-                    opacity: 1;
-                }
-            }
-
-            @keyframes fadein {
-                from {
-                    top: 0;
-                    opacity: 0;
-                }
-
-                to {
-                    top: 20px;
-                    opacity: 1;
-                }
-            }
-
-            @-webkit-keyframes fadeout {
-                from {
-                    top: 20px;
-                    opacity: 1;
-                }
-
-                to {
-                    top: 0;
-                    opacity: 0;
-                }
-            }
-
-            @keyframes fadeout {
-                from {
-                    top: 20px;
-                    opacity: 1;
-                }
-
-                to {
-                    top: 0;
-                    opacity: 0;
-                }
-            }
+            
         </style>
     </head>
 
     <body>
         <div class="container">
             <div class="header">
-                Plant Plans
+                Plant Pals
             </div>
             <div class="content">
                 <h3>Password Reset Request</h2>
                     <div>
                         <p>Hello, <strong> ${userName} </strong></p>
-                        <p> <span></span> We received a request to reset your password for your Plant Plans account.
+                        <p> <span></span> We received a request to reset your password for your Plant Pals account.
                             Use the 6-digit code below to reset your password.
                             If you did not request this, please ignore this email.</p>
                         <div class="code" id="resetCode">${resetCode}</div>
@@ -175,35 +107,12 @@ export const generatePasswordResetEmail = (
                     </div>
             </div>
             <div class="footer">
-                <p>&copy; 2024 Plant Plans. All rights reserved.</p>
+                <p>&copy; 2024 Plant Pals. All rights reserved.</p>
             </div>
         </div>
 
-        <!-- Toast notification -->
-        <div id="toast" class="toast">Code copied to clipboard</div>
 
-        <script>
-            // Select the reset code element
-            const resetCodeElement = document.getElementById('resetCode');
-
-            // Function to copy text to clipboard and show toast
-            resetCodeElement.addEventListener('click', function () {
-                // Copy the code text to clipboard
-                const codeText = resetCodeElement.textContent;
-                navigator.clipboard.writeText(codeText).then(function () {
-                    // Show toast message
-                    const toast = document.getElementById('toast');
-                    toast.className = "toast show";
-
-                    // Hide the toast after 2 seconds
-                    setTimeout(function () {
-                        toast.className = toast.className.replace("show", "");
-                    }, 2000);
-                }).catch(function (error) {
-                    console.error('Failed to copy text: ', error);
-                });
-            });
-        </script>
+        
     </body>
 
     </html>

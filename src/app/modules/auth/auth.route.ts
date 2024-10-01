@@ -23,12 +23,12 @@ router.post(
 router.post(
   '/change-password',
   validateRequest(UserValidation.changePasswordValidationSchema),
-  auth('ADMIN', 'USER'),
+  auth(true, 'ADMIN', 'USER'),
   UserController.changePassword,
 );
 
 router.post(
-  '/access-token',
+  '/refresh-token',
   validateRequestCookies(UserValidation.accessTokenValidationSchema),
   UserController.accessToken,
 );

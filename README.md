@@ -1,1 +1,1 @@
-# plant-plans-server
+# plant-pals-server
