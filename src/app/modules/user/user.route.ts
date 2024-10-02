@@ -10,4 +10,7 @@ router.post(
   UserController.manageFollow,
 );
 
+router.patch('/:id', auth(false, 'ADMIN'), UserController.updateUserRole);
+router.delete('/:id', auth(false, 'ADMIN'), UserController.deleteUser);
+
 export const UserRoutes = router;

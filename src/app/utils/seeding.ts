@@ -1,27 +1,23 @@
-/* eslint-disable no-console */
-/*
 import config from '../config';
-import { USER_ROLE, USER_STATUS } from '../modules/User/user.constant';
-import { User } from '../modules/User/user.model';
+import { userRoles } from '../modules/user/user.constant';
+import { User } from '../modules/user/user.model';
 
 export const seed = async () => {
   try {
-    //atfirst check if the admin exist of not
     const admin = await User.findOne({
-      role: USER_ROLE.ADMIN,
+      role: userRoles.admin,
       email: config.admin_email,
-      status: USER_STATUS.ACTIVE,
-    });
+    }).select('_id email');
     if (!admin) {
       console.log('Seeding started...');
       await User.create({
-        name: 'Admin',
-        role: USER_ROLE.ADMIN,
+        name: config.admin_name,
         email: config.admin_email,
+        role: userRoles.admin,
         password: config.admin_password,
-        profilePhoto: config.admin_profile_photo,
-        mobileNumber: config.admin_mobile_number,
-        status: USER_STATUS.ACTIVE,
+        profilePicture: config.admin_profile_picture,
+        coverPicture: config.admin_cover_picture,
+        isVerified: true,
       });
       console.log('Admin created successfully...');
       console.log('Seeding completed...');
@@ -30,4 +26,3 @@ export const seed = async () => {
     console.log('Error in seeding', error);
   }
 };
-*/

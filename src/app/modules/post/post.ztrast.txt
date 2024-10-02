@@ -1,0 +1,60 @@
+/*
+1. Check post existency
+2. User cannot vote itself
+3. If User not vote this post add vote
+4. If already vote & again same vote than remove the vote
+5. If already vote & change the vote to another then reverse the vote(upV to downV or downV to upV )
+*/
+const manageVoating = async (
+  dbUser: TUserResponse,
+  payload: TVoatingPayload,
+) => {
+  const { postId, value } = payload;
+  const post = await Post.findById(postId);
+  const requestUserId = dbUser?._id.toString();
+  const updatedData: Record<string, unknown> = {};
+  // const updatedData: Partial<TPost> = {};
+  if (!post) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      'The post may deleted. Please reload website',
+    );
+  }
+  if (requestUserId === post?.user.toString()) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'You cannot upvote your post');
+  }
+
+  const isUserAlreadyVoteBefore = post.voatingUsers?.find(
+    (item) => item.user.toString() === requestUserId,
+  );
+
+  const voteOn = value === 1 ? 'upvote' : 'downvote';
+  const voteOnReverse = value === 1 ? 'downvote' : 'upvote';
+  if (!isUserAlreadyVoteBefore) {
+    console.log('New Voating');
+    updatedData[voteOn] = post[voteOn] + 1;
+    updatedData.voatingUsers = [
+      ...post.voatingUsers,
+      { user: dbUser?._id, value },
+    ];
+  } else if (isUserAlreadyVoteBefore?.value === value) {
+    console.log('Same value');
+    updatedData[voteOn] = post[voteOn] - 1;
+    updatedData.voatingUsers = post.voatingUsers.filter(
+      (item) => item.user.toString() !== requestUserId,
+    );
+  } else {
+    console.log('Reversing Vote');
+    updatedData[voteOn] = post[voteOn] + 1;
+    updatedData[voteOnReverse] = post[voteOnReverse] - 1;
+    updatedData.voatingUsers = post.voatingUsers.map((item) =>
+      item.user.toString() === requestUserId
+        ? { user: item.user, value }
+        : item,
+    );
+  }
+  const result = await Post.findByIdAndUpdate(postId, updatedData, {
+    new: true,
+  });
+  return result;
+};

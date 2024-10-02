@@ -7,6 +7,7 @@ import { TUserResponse } from '../user/user.interface';
 import { User } from '../user/user.model';
 import { TCreatePost, TUpdatePost, TVoatingPayload } from './post.interface';
 import { Post } from './post.model';
+import { Comments } from '../comment/comment.model';
 
 /*
 requirements : 
@@ -117,6 +118,11 @@ const updatePost = async (
   return result;
 };
 
+/*
+1. Delete the post
+2. Delete the comments on the corresponding post
+3. Pop out the post id from the createdBy users myPosts
+*/
 const deletePost = async (dbUser: TUserResponse, id: string) => {
   const post = await Post.findById(id);
   if (!post) {
@@ -125,19 +131,41 @@ const deletePost = async (dbUser: TUserResponse, id: string) => {
       'This post is not found or deleted',
     );
   }
-  if (post?.user.toString() !== dbUser?._id.toString()) {
+  if (
+    dbUser.role === 'USER' &&
+    post?.user.toString() !== dbUser?._id.toString()
+  ) {
     throw new AppError(httpStatus.FORBIDDEN, "You cann't delete others post");
   }
-  const result = await Post.findByIdAndDelete(id, { new: true });
-  return result;
+  const session = await mongoose.startSession();
+
+  try {
+    session.startTransaction();
+    await Post.findByIdAndDelete(id, { session, new: true });
+    await User.findByIdAndUpdate(
+      post?.user,
+      {
+        $pull: { myPosts: post?._id },
+      },
+      { session, new: true },
+    );
+    await Comments.deleteMany({ post: post?._id }, { session, new: true });
+    await session.commitTransaction();
+    await session.endSession();
+    return 'Post deleted successfully';
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw new AppError(httpStatus.CONFLICT, 'Failed to delete the post');
+  }
 };
 
 /*
 1. Check post existency
 2. User cannot vote itself
 3. If User not vote this post add vote
-4. If already vote & again same vote than remove the vote
-5. If already vote & change the vote to another then reverse the vote(upV to downV or downV to upV )
+4. Else user cannot revote or change vote
 */
 const manageVoating = async (
   dbUser: TUserResponse,
@@ -146,8 +174,7 @@ const manageVoating = async (
   const { postId, value } = payload;
   const post = await Post.findById(postId);
   const requestUserId = dbUser?._id.toString();
-  const updatedData: Record<string, unknown> = {};
-  // const updatedData: Partial<TPost> = {};
+
   if (!post) {
     throw new AppError(
       httpStatus.NOT_FOUND,
@@ -162,34 +189,22 @@ const manageVoating = async (
     (item) => item.user.toString() === requestUserId,
   );
 
-  const voteOn = value === 1 ? 'upvote' : 'downvote';
-  const voteOnReverse = value === 1 ? 'downvote' : 'upvote';
-  if (!isUserAlreadyVoteBefore) {
-    console.log('New Voating');
-    updatedData[voteOn] = post[voteOn] + 1;
-    updatedData.voatingUsers = [
-      ...post.voatingUsers,
-      { user: dbUser?._id, value },
-    ];
-  } else if (isUserAlreadyVoteBefore?.value === value) {
-    console.log('Same value');
-    updatedData[voteOn] = post[voteOn] - 1;
-    updatedData.voatingUsers = post.voatingUsers.filter(
-      (item) => item.user.toString() !== requestUserId,
-    );
-  } else {
-    console.log('Reversing Vote');
-    updatedData[voteOn] = post[voteOn] + 1;
-    updatedData[voteOnReverse] = post[voteOnReverse] - 1;
-    updatedData.voatingUsers = post.voatingUsers.map((item) =>
-      item.user.toString() === requestUserId
-        ? { user: item.user, value }
-        : item,
+  if (isUserAlreadyVoteBefore) {
+    const previousVoteOn =
+      isUserAlreadyVoteBefore.value === 1 ? 'Upvote' : 'Downvote';
+    throw new Error(
+      `You have already ${previousVoteOn} this post. You cann't modify it.`,
     );
   }
-  const result = await Post.findByIdAndUpdate(postId, updatedData, {
-    new: true,
-  });
+
+  const result = await Post.findByIdAndUpdate(
+    postId,
+    {
+      $set: { [value === 1 ? 'upvote' : 'downvote']: value },
+      $push: { voatingUsers: { user: dbUser?._id, value } },
+    },
+    { new: true },
+  );
   return result;
 };
 

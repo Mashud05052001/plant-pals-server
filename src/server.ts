@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import { Server } from 'http';
 import app from './app';
 import config from './app/config';
+import { seed } from './app/utils/seeding';
 // import { seed } from './app/utils/seeding';
 const PORT = config.port || 5000;
 let server: Server;
@@ -9,7 +10,7 @@ let server: Server;
 async function connectServer() {
   try {
     await mongoose.connect(config.database_url as string);
-    // await seed();  // In first time database connection add the superAdmin or other necessary credentials
+    await seed();
     server = app.listen(PORT, () => {
       console.log(`🚀 The server is running on ${PORT} port.`);
     });

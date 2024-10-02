@@ -16,7 +16,6 @@ const router = Router();
 router.post(
   '/',
   auth(false, 'ADMIN', 'USER'),
-
   multerUpload.fields([{ name: 'images', maxCount: IMAGE_MAX_IMAGE_COUNT }]),
   validateImageFileRequest(ImageFilesArrayValidationSchema, false),
   parseBody,
@@ -34,6 +33,7 @@ router.patch(
   auth(false, 'ADMIN', 'USER'),
   PostController.updatePost,
 );
+
 router.delete('/:id', auth(false, 'ADMIN', 'USER'), PostController.deletePost);
 
 router.post(

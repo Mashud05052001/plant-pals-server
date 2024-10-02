@@ -5,12 +5,11 @@ export type TVoatingUsers = {
   value: 1 | -1;
 };
 
-export type TCreatePost = Pick<TPost, 'category' | 'description'>;
-
 export type TPost = {
   user: Types.ObjectId;
+  title: string;
+  description: string;
   category: Types.ObjectId;
-  description?: string;
   images: string[];
   upvote: number;
   downvote: number;
@@ -24,5 +23,6 @@ export type TVoatingPayload = {
   postId: string;
   value: 1 | -1;
 };
+export type TCreatePost = Pick<TPost, 'category' | 'description'>;
 
 export type TUpdatePost = Pick<TPost, 'category' | 'description' | 'isPremium'>;

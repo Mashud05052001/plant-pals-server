@@ -12,7 +12,27 @@ const manageFollow = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const updateUserRole = catchAsync(async (req, res) => {
+  const result = await UserService.updateUserRole(req.user, req?.params?.id);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Role changed successfully',
+    data: result,
+  });
+});
+const deleteUser = catchAsync(async (req, res) => {
+  const result = await UserService.deleteUser(req?.params?.id);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'User deleted successfully',
+    data: result,
+  });
+});
 
 export const UserController = {
   manageFollow,
+  updateUserRole,
+  deleteUser,
 };

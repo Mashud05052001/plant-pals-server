@@ -1,7 +1,7 @@
 import { model, Schema } from 'mongoose';
-import { TPost } from './post.interface';
+import { TPost, TVoatingUsers } from './post.interface';
 
-const voatingUsersSchema = new Schema(
+const voatingUsersSchema = new Schema<TVoatingUsers>(
   {
     user: {
       type: Schema.Types.ObjectId,
@@ -24,6 +24,10 @@ const postSchema = new Schema<TPost>(
     user: {
       type: Schema.Types.ObjectId,
       ref: 'User',
+      required: true,
+    },
+    title: {
+      type: String,
       required: true,
     },
     description: {

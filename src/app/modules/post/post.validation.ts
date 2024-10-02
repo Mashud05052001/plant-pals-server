@@ -3,6 +3,9 @@ import { z } from 'zod';
 const createPostValidationSchema = z.object({
   body: z.object({
     category: z.string({ required_error: 'Post category is required' }),
+    title: z.string({ invalid_type_error: 'Title must be in string' }).min(10, {
+      message: 'Title must be at least 4 characters long',
+    }),
     description: z
       .string({ invalid_type_error: 'Description must be in string' })
       .min(10, {
@@ -15,14 +18,20 @@ const createPostValidationSchema = z.object({
 const updatePostValidationSchema = z.object({
   body: z
     .object({
-      category: z
-        .string({ required_error: 'Post category is required' })
+      title: z
+        .string({ invalid_type_error: 'Title must be in string' })
+        .min(10, {
+          message: 'Title must be at least 4 characters long',
+        })
         .optional(),
       description: z
         .string({ invalid_type_error: 'Description must be in string' })
         .min(10, {
           message: 'Description must be at least 10 characters long',
         })
+        .optional(),
+      category: z
+        .string({ required_error: 'Post category is required' })
         .optional(),
       isPremium: z.boolean().optional(),
     })
