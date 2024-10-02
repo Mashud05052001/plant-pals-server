@@ -7,6 +7,16 @@ import validateRequest, {
 import { AuthValidation } from './auth.validation';
 
 const router = Router();
+/*
+Auth
+1. Registration           '/register'
+2. Login                  '/login'
+3. Change Password        '/change-password'
+4. Refresh Token          '/refresh-token'
+5. Forget Password        '/forget-password'
+6. Validate Reset Code    '/check-reset-code'
+7. Reset Password         '/reset-password'
+*/
 
 router.post(
   '/register',

@@ -88,8 +88,8 @@ const getAllPosts = async (query: Record<string, unknown>) => {
   };
 };
 
-const getSinglePost = async (id: string) => {
-  const result = await Post.findById(id);
+const getSinglePost = async (postId: string) => {
+  const result = await Post.findById(postId);
   if (!result) {
     throw new AppError(
       httpStatus.NOT_FOUND,
@@ -122,9 +122,10 @@ const updatePost = async (
 1. Delete the post
 2. Delete the comments on the corresponding post
 3. Pop out the post id from the createdBy users myPosts
+4. Pop out the post if from the favouritePosts of every users which has favourite it
 */
-const deletePost = async (dbUser: TUserResponse, id: string) => {
-  const post = await Post.findById(id);
+const deletePost = async (dbUser: TUserResponse, postId: string) => {
+  const post = await Post.findById(postId);
   if (!post) {
     throw new AppError(
       httpStatus.NOT_FOUND,
@@ -141,11 +142,20 @@ const deletePost = async (dbUser: TUserResponse, id: string) => {
 
   try {
     session.startTransaction();
-    await Post.findByIdAndDelete(id, { session, new: true });
+    await Post.findByIdAndDelete(postId, { session, new: true });
     await User.findByIdAndUpdate(
       post?.user,
       {
         $pull: { myPosts: post?._id },
+      },
+      { session, new: true },
+    );
+    await User.updateMany(
+      {
+        favouritePosts: post?._id,
+      },
+      {
+        $pop: { favouritePosts: post?._id },
       },
       { session, new: true },
     );
@@ -208,6 +218,44 @@ const manageVoating = async (
   return result;
 };
 
+/*
+1. Previously selected hole remove from favourite posts
+2. Na hole add to favourite posts
+*/
+const favouritePost = async (dbUser: TUserResponse, postId: string) => {
+  const post = await Post.findById(postId);
+  if (!post) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      'This post is not found or deleted',
+    );
+  }
+  const isAlreadyFavourite = dbUser?.favouritePosts?.find(
+    (postObjId) => postObjId.toString() === postId,
+  );
+  if (isAlreadyFavourite) {
+    console.log('Removed');
+    const result = await User.findByIdAndUpdate(
+      dbUser?._id,
+      {
+        $pull: { favouritePosts: postId },
+      },
+      { new: true },
+    );
+    return { result, message: 'Removed form favourites successfully' };
+  } else {
+    console.log('Added');
+    const result = await User.findByIdAndUpdate(
+      dbUser?._id,
+      {
+        $push: { favouritePosts: postId },
+      },
+      { new: true },
+    );
+    return { result, message: 'Add to favourites successfully' };
+  }
+};
+
 export const PostService = {
   createPost,
   getAllPosts,
@@ -215,4 +263,5 @@ export const PostService = {
   updatePost,
   deletePost,
   manageVoating,
+  favouritePost,
 };

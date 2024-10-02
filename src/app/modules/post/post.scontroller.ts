@@ -70,6 +70,18 @@ const manageVoating = catchAsync(async (req, res) => {
     data: result,
   });
 });
+const favouritePost = catchAsync(async (req, res) => {
+  const { result, message } = await PostService.favouritePost(
+    req?.dbUser,
+    req?.params.id,
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: message,
+    data: result,
+  });
+});
 
 export const PostController = {
   createPost,
@@ -78,4 +90,5 @@ export const PostController = {
   updatePost,
   deletePost,
   manageVoating,
+  favouritePost,
 };

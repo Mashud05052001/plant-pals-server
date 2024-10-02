@@ -43,4 +43,10 @@ router.post(
   PostController.manageVoating,
 );
 
+router.post(
+  '/favourite/:id',
+  auth(false, 'ADMIN', 'USER'),
+  PostController.favouritePost,
+);
+
 export const PostRoutes = router;

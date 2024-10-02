@@ -102,7 +102,7 @@ class QueryBuilder<T> {
 
   /* 
     Fields function means specifically told the server that those some field is my need only
-    INPUT  =>  ?sort=fieldName1,-fieldName2
+    INPUT  =>  ?fields=fieldName1,-fieldName2
     QueryMaking => "fieldName1 -fieldName2" 
   */
   fields() {

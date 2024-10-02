@@ -49,6 +49,11 @@ export type TUser = {
   resetPasswordAt?: Date;
 };
 
+export type TUpdateUserData = {
+  name?: string;
+  bio?: string;
+};
+
 export interface TUserMethods extends Model<TUser> {
   findUser(email: string, isPasswordRequired: boolean): Promise<TUserResponse>;
   isPasswordValid(
