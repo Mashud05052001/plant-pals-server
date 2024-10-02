@@ -2,8 +2,9 @@ import httpStatus from 'http-status';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import { UserService } from './user.service';
+import { TImageFile } from '../../interface/image.interface';
 
-// ADMIN WORK
+// ADMIN Only
 const getAllUsers = catchAsync(async (req, res) => {
   const result = await UserService.getAllUsers(req?.query);
   sendResponse(res, {
@@ -34,9 +35,9 @@ const getSingleUser = catchAsync(async (req, res) => {
   });
 });
 
-//
-const getMyInformation = catchAsync(async (req, res) => {
-  const result = await UserService.getMyInformation(req?.dbUser, req?.query);
+// Authorized Person
+const getMe = catchAsync(async (req, res) => {
+  const result = await UserService.getMe(req?.dbUser, req?.query);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -45,12 +46,38 @@ const getMyInformation = catchAsync(async (req, res) => {
   });
 });
 
-const updateMyself = catchAsync(async (req, res) => {
-  const result = await UserService.updateMyself(req.dbUser, req.body);
+const updateMe = catchAsync(async (req, res) => {
+  const result = await UserService.updateMe(req.dbUser, req.body);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'User updated successfully',
+    data: result,
+  });
+});
+
+const updateProfilePicture = catchAsync(async (req, res) => {
+  const result = await UserService.updateProfilePicture(
+    req.dbUser,
+    req.file as TImageFile,
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'User profile picture updated successfully',
+    data: result,
+  });
+});
+
+const updateCoverPicture = catchAsync(async (req, res) => {
+  const result = await UserService.updateCoverPicture(
+    req.dbUser,
+    req.file as TImageFile,
+  );
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'User cover picture updated successfully',
     data: result,
   });
 });
@@ -77,8 +104,10 @@ const deleteUser = catchAsync(async (req, res) => {
 
 export const UserController = {
   getSingleUser,
-  getMyInformation,
-  updateMyself,
+  getMe,
+  updateMe,
+  updateProfilePicture,
+  updateCoverPicture,
   getAllUsers,
   manageFollow,
   updateUserRole,

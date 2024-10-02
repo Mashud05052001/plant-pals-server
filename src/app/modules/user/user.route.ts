@@ -1,20 +1,13 @@
 import { Router } from 'express';
+import { multerUpload } from '../../config/multer.config';
 import auth from '../../middleware/auth';
-import { UserController } from './user.scontroller';
+import validateImageFileRequest from '../../middleware/validateImageFileRequest';
 import validateRequest from '../../middleware/validateRequest';
+import { ImageFileValidationSchema } from '../../zod/image.validation';
+import { UserController } from './user.scontroller';
 import { UserValidation } from './user.validation';
 
 const router = Router();
-
-/*
-User 
-1. Get all users(ADMIN)         "/users/all"
-2. Update user role(ADMIN)      "/users/change-role/userId"
-3. Get single User(Any Person)  "/users/userId"
-4. Get my information(Only me)  "/users/me"
-6. Manage users follow          "/users/follow/userId"
-5. Delete user(Admin | Only user himself)   "/users/userId"
-*/
 
 // Only ADMIN
 // All users infromation
@@ -31,18 +24,31 @@ router.get('/:id', UserController.getSingleUser);
 
 // Authorized Person access
 // Get only my all information
-router.get(
-  '/me',
-  auth(false, 'ADMIN', 'USER'),
-  UserController.getMyInformation,
-);
+router.get('/me', auth(false, 'ADMIN', 'USER'), UserController.getMe);
 // update my information
 router.patch(
   '/update-me',
   validateRequest(UserValidation.updateUserInfoValidationSchema),
   auth(false, 'ADMIN', 'USER'),
-  UserController.updateMyself,
+  UserController.updateMe,
 );
+// update profile picture
+router.patch(
+  '/update-profile-picture',
+  auth(false, 'ADMIN', 'USER'),
+  multerUpload.single('image'),
+  validateImageFileRequest(ImageFileValidationSchema, true),
+  UserController.updateProfilePicture,
+);
+// Update Cover picture
+router.patch(
+  '/update-cover-picture',
+  auth(false, 'ADMIN', 'USER'),
+  multerUpload.single('image'),
+  validateImageFileRequest(ImageFileValidationSchema, true),
+  UserController.updateCoverPicture,
+);
+
 // update my following | followers
 router.post(
   '/follow/:id',

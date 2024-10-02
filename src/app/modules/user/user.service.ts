@@ -8,8 +8,56 @@ import { TJwtPayload } from '../../utils/jwtToken';
 import { Comments } from '../comment/comment.model';
 import QueryBuilder from '../../builder/QueryBuilder';
 import { TUpdateUserData, TUserResponse } from './user.interface';
+import { TImageFile } from '../../interface/image.interface';
 
-// UPDATE MYSELF
+// ADMIN Only
+const getAllUsers = async (query: Record<string, unknown>) => {
+  const usersQuery = new QueryBuilder(
+    User.find().select('name email role profilePicture isVerified'),
+    query,
+  )
+    .paginate()
+    .search(['name email'], '-createdAt')
+    .filter('-createdAt')
+    .sort();
+
+  const result = await usersQuery.modelQuery;
+  const meta = await usersQuery.countTotal();
+  return {
+    data: result,
+    meta,
+  };
+};
+const updateUserRole = async (decodedUser: TJwtPayload, userId: string) => {
+  const userExist = await User.findById(userId);
+  if (!userExist) {
+    throw new AppError(
+      httpStatus.NOT_FOUND,
+      'The user is deleted or not found',
+    );
+  }
+  if (userExist.email === config.admin_email) {
+    throw new AppError(
+      httpStatus.NOT_ACCEPTABLE,
+      'Connot modify the role of Super-Admin',
+    );
+  }
+  if (decodedUser.email === userExist.email) {
+    throw new AppError(
+      httpStatus.NOT_ACCEPTABLE,
+      'User cannot change his role',
+    );
+  }
+
+  const result = await User.findByIdAndUpdate(
+    userId,
+    {
+      $set: { role: userExist.role === 'USER' ? 'ADMIN' : 'USER' },
+    },
+    { new: true },
+  );
+  return result;
+};
 
 // Any user & admin can visit another user profile & show
 const getSingleUser = async (userId: string) => {
@@ -22,10 +70,8 @@ const getSingleUser = async (userId: string) => {
   return userInfo;
 };
 
-const getMyInformation = async (
-  dbUser: TUserResponse,
-  query: Record<string, unknown>,
-) => {
+// Authorized Person
+const getMe = async (dbUser: TUserResponse, query: Record<string, unknown>) => {
   const populateFields = [
     'myPosts',
     'favouritePosts',
@@ -42,14 +88,32 @@ const getMyInformation = async (
   return userInfo;
 };
 
-const updateMyself = async (
-  dbUser: TUserResponse,
-  payload: TUpdateUserData,
-) => {
+const updateMe = async (dbUser: TUserResponse, payload: TUpdateUserData) => {
   const result = await User.findByIdAndUpdate(dbUser?._id, payload, {
     new: true,
   });
   return result;
+};
+
+const updateProfilePicture = async (
+  dbUser: TUserResponse,
+  imageFile: TImageFile,
+) => {
+  return await User.findByIdAndUpdate(
+    dbUser?._id,
+    { profilePicture: imageFile?.path },
+    { new: true },
+  );
+};
+const updateCoverPicture = async (
+  dbUser: TUserResponse,
+  imageFile: TImageFile,
+) => {
+  return await User.findByIdAndUpdate(
+    dbUser?._id,
+    { coverPicture: imageFile?.path },
+    { new: true },
+  );
 };
 
 /* 
@@ -176,60 +240,12 @@ const deleteUser = async (dbUser: TUserResponse, userId: string) => {
   }
 };
 
-// ADMIN WORK
-const updateUserRole = async (decodedUser: TJwtPayload, userId: string) => {
-  const userExist = await User.findById(userId);
-  if (!userExist) {
-    throw new AppError(
-      httpStatus.NOT_FOUND,
-      'The user is deleted or not found',
-    );
-  }
-  if (userExist.email === config.admin_email) {
-    throw new AppError(
-      httpStatus.NOT_ACCEPTABLE,
-      'Connot modify the role of Super-Admin',
-    );
-  }
-  if (decodedUser.email === userExist.email) {
-    throw new AppError(
-      httpStatus.NOT_ACCEPTABLE,
-      'User cannot change his role',
-    );
-  }
-
-  const result = await User.findByIdAndUpdate(
-    userId,
-    {
-      $set: { role: userExist.role === 'USER' ? 'ADMIN' : 'USER' },
-    },
-    { new: true },
-  );
-  return result;
-};
-
-const getAllUsers = async (query: Record<string, unknown>) => {
-  const usersQuery = new QueryBuilder(
-    User.find().select('name email role profilePicture isVerified'),
-    query,
-  )
-    .paginate()
-    .search(['name email'], '-createdAt')
-    .filter('-createdAt')
-    .sort();
-
-  const result = await usersQuery.modelQuery;
-  const meta = await usersQuery.countTotal();
-  return {
-    data: result,
-    meta,
-  };
-};
-
 export const UserService = {
-  getMyInformation,
+  getMe,
   getSingleUser,
-  updateMyself,
+  updateMe,
+  updateProfilePicture,
+  updateCoverPicture,
   getAllUsers,
   manageFollow,
   updateUserRole,
