@@ -37,7 +37,6 @@ export type TUser = {
   bio?: string;
   role: TUserRoles;
   profilePicture?: string;
-  coverPicture?: string;
   myPosts?: Types.ObjectId[];
   favouritePosts?: Types.ObjectId[];
   following?: Types.ObjectId[];

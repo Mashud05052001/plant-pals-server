@@ -69,21 +69,11 @@ const updateProfilePicture = catchAsync(async (req, res) => {
   });
 });
 
-const updateCoverPicture = catchAsync(async (req, res) => {
-  const result = await UserService.updateCoverPicture(
-    req.dbUser,
-    req.file as TImageFile,
+const manageFollowing = catchAsync(async (req, res) => {
+  const result = await UserService.manageFollowing(
+    req?.dbUser,
+    req?.params?.id,
   );
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: 'User cover picture updated successfully',
-    data: result,
-  });
-});
-
-const manageFollow = catchAsync(async (req, res) => {
-  const result = await UserService.manageFollow(req?.dbUser, req?.params?.id);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -107,9 +97,8 @@ export const UserController = {
   getMe,
   updateMe,
   updateProfilePicture,
-  updateCoverPicture,
   getAllUsers,
-  manageFollow,
+  manageFollowing,
   updateUserRole,
   deleteUser,
 };

@@ -10,11 +10,14 @@ Auth
 
 User 
 1. Get all users(ADMIN)         "/users/all"
-2. Update user role(ADMIN)      "/users/change-role/userId"
+2. Change user role(ADMIN)      "/users/change-role/userId"
 3. Get single User(Any Person)  "/users/userId"
-4. Get my information(Only me)  "/users/me"
-6. Manage users follow          "/users/follow/userId"
-5. Delete user(Admin | Only user himself)   "/users/userId"
+4. Update Me                    "/users/update-me"
+5. Update Profile Picture       "/users/update-profile-picture"
+6. Update Cover Picture         "/users/update-cover-picture"
+7. Get my information(Only me)  "/users/me"
+8. Manage users follow          "/users/follow/userId"
+9. Delete user(Admin | Only user himself)   "/users/userId"
 
 Post
 1. Create Post          "/posts/"  POST

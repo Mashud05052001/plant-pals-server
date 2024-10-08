@@ -3,11 +3,11 @@ import mongoose from 'mongoose';
 import QueryBuilder from '../../builder/QueryBuilder';
 import AppError from '../../errors/AppError';
 import { TImageFiles } from '../../interface/image.interface';
+import { Comments } from '../comment/comment.model';
 import { TUserResponse } from '../user/user.interface';
 import { User } from '../user/user.model';
 import { TCreatePost, TUpdatePost, TVoatingPayload } from './post.interface';
 import { Post } from './post.model';
-import { Comments } from '../comment/comment.model';
 
 /*
 requirements : 
@@ -25,8 +25,9 @@ const createPost = async (
     modifiedData.images = images.map((image) => image.path);
   }
   modifiedData.user = dbUser?._id.toString();
-
+  console.log(modifiedData);
   const session = await mongoose.startSession();
+
   try {
     session.startTransaction();
     const uploadPost = await Post.create([modifiedData], {
@@ -45,12 +46,11 @@ const createPost = async (
         new: true,
       },
     );
-
     await session.commitTransaction();
     await session.endSession();
-    return uploadPost;
+    return uploadPost[0];
   } catch (error) {
-    console.log(error);
+    console.log(error, 'error found in creating post');
     await session.abortTransaction();
     await session.endSession();
     throw new AppError(httpStatus.CONFLICT, 'Failed to upload the post');
@@ -61,18 +61,27 @@ Requirements:
   
 */
 const getAllPosts = async (query: Record<string, unknown>) => {
-  const postQuery = new QueryBuilder(
-    Post.find()
+  const fieldsQuery = query?.fields as string | undefined;
+
+  const shouldPopulate = !(
+    fieldsQuery && fieldsQuery.includes('gallery_images')
+  );
+  const baseQuery = Post.find();
+
+  if (shouldPopulate) {
+    baseQuery
       .populate({
         path: 'category',
         select: '-__v',
       })
       .populate({
         path: 'user',
-        select: 'name email _id role',
-      }),
-    query,
-  )
+        select: 'name email _id role profilePicture favouritePosts',
+      });
+  } else {
+    query.fields = 'images';
+  }
+  const postQuery = new QueryBuilder(baseQuery, query)
     .search(['description', 'category'], 'upvote')
     .fields()
     .filter('upvote')
@@ -89,7 +98,7 @@ const getAllPosts = async (query: Record<string, unknown>) => {
 };
 
 const getSinglePost = async (postId: string) => {
-  const result = await Post.findById(postId);
+  const result = await Post.findById(postId).populate('category');
   if (!result) {
     throw new AppError(
       httpStatus.NOT_FOUND,
@@ -155,7 +164,7 @@ const deletePost = async (dbUser: TUserResponse, postId: string) => {
         favouritePosts: post?._id,
       },
       {
-        $pop: { favouritePosts: post?._id },
+        $pull: { favouritePosts: post?._id },
       },
       { session, new: true },
     );
@@ -222,7 +231,17 @@ const manageVoating = async (
 1. Previously selected hole remove from favourite posts
 2. Na hole add to favourite posts
 */
-const favouritePost = async (dbUser: TUserResponse, postId: string) => {
+const handleFavouritePost = async (
+  dbUser: TUserResponse,
+  postId: string,
+  payload: 'add' | 'remove',
+) => {
+  const isFavourite = dbUser?.favouritePosts?.find(
+    (postObjId) => postObjId.toString() === postId,
+  );
+  if (isFavourite && payload === 'add') {
+    return 'Post already added in favourites';
+  }
   const post = await Post.findById(postId);
   if (!post) {
     throw new AppError(
@@ -230,29 +249,32 @@ const favouritePost = async (dbUser: TUserResponse, postId: string) => {
       'This post is not found or deleted',
     );
   }
-  const isAlreadyFavourite = dbUser?.favouritePosts?.find(
-    (postObjId) => postObjId.toString() === postId,
-  );
-  if (isAlreadyFavourite) {
-    console.log('Removed');
-    const result = await User.findByIdAndUpdate(
-      dbUser?._id,
-      {
-        $pull: { favouritePosts: postId },
-      },
-      { new: true },
-    );
-    return { result, message: 'Removed form favourites successfully' };
-  } else {
-    console.log('Added');
-    const result = await User.findByIdAndUpdate(
+
+  if (payload === 'add') {
+    await User.findByIdAndUpdate(
       dbUser?._id,
       {
         $push: { favouritePosts: postId },
       },
       { new: true },
     );
-    return { result, message: 'Add to favourites successfully' };
+    return 'Post added successfully in favourites';
+  } else {
+    if (!isFavourite) {
+      throw new AppError(
+        httpStatus.BAD_REQUEST,
+        'This post does not exist in your favourites',
+      );
+    } else {
+      await User.findByIdAndUpdate(
+        dbUser?._id,
+        {
+          $pull: { favouritePosts: postId },
+        },
+        { new: true },
+      );
+      return 'Post successfully removed from your favourites';
+    }
   }
 };
 
@@ -263,5 +285,5 @@ export const PostService = {
   updatePost,
   deletePost,
   manageVoating,
-  favouritePost,
+  handleFavouritePost,
 };

@@ -50,13 +50,13 @@ const updateCategory = async (id: string, payload: TCategory) => {
 };
 
 const deleteCategory = async (id: string) => {
-  const result = await Category.findByIdAndDelete(id, { new: true });
-  return result;
+  await Category.findByIdAndDelete(id, { new: true });
+  return 'Category Deleted successfully';
 };
 
 const deleteAllCategories = async () => {
-  const result = await Category.deleteMany({}, { new: true });
-  return result;
+  await Category.deleteMany({}, { new: true });
+  return 'All categories deleted successfully';
 };
 
 export const CategoryService = {

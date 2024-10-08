@@ -1,14 +1,14 @@
-import mongoose from 'mongoose';
-import config from '../../config';
-import { User } from './user.model';
 import httpStatus from 'http-status';
-import { Post } from '../post/post.model';
+import mongoose from 'mongoose';
+import QueryBuilder from '../../builder/QueryBuilder';
+import config from '../../config';
 import AppError from '../../errors/AppError';
+import { TImageFile } from '../../interface/image.interface';
 import { TJwtPayload } from '../../utils/jwtToken';
 import { Comments } from '../comment/comment.model';
-import QueryBuilder from '../../builder/QueryBuilder';
+import { Post } from '../post/post.model';
 import { TUpdateUserData, TUserResponse } from './user.interface';
-import { TImageFile } from '../../interface/image.interface';
+import { User } from './user.model';
 
 // ADMIN Only
 const getAllUsers = async (query: Record<string, unknown>) => {
@@ -71,6 +71,7 @@ const getSingleUser = async (userId: string) => {
 };
 
 // Authorized Person
+// Get all in latest first types
 const getMe = async (dbUser: TUserResponse, query: Record<string, unknown>) => {
   const populateFields = [
     'myPosts',
@@ -80,10 +81,28 @@ const getMe = async (dbUser: TUserResponse, query: Record<string, unknown>) => {
   ].filter((field) => (query?.populate as string)?.includes(field));
 
   let userQuery = User.findById(dbUser?._id);
+
   if (populateFields.length > 0) {
-    userQuery = userQuery.populate(populateFields.join(' '));
+    const populationOptions = populateFields.map((field) => {
+      if (field === 'myPosts') {
+        return {
+          path: field,
+          populate: {
+            path: 'category',
+          },
+          options: { sort: { createdAt: -1 } },
+        };
+      }
+      return {
+        path: field,
+        options: { sort: { createdAt: -1 } },
+      };
+    });
+
+    userQuery = userQuery.populate(populationOptions);
   }
 
+  // Execute the query
   const userInfo = await userQuery;
   return userInfo;
 };
@@ -105,22 +124,15 @@ const updateProfilePicture = async (
     { new: true },
   );
 };
-const updateCoverPicture = async (
-  dbUser: TUserResponse,
-  imageFile: TImageFile,
-) => {
-  return await User.findByIdAndUpdate(
-    dbUser?._id,
-    { coverPicture: imageFile?.path },
-    { new: true },
-  );
-};
 
 /* 
   1.  2nd user er followers e 1st user er id , 1st user er following e 2nd user er id
   2.  If alreadde folloing then simpley unfollow them
 */
-const manageFollow = async (firstUser: TUserResponse, secondUserId: string) => {
+const manageFollowing = async (
+  firstUser: TUserResponse,
+  secondUserId: string,
+) => {
   const firstUserId = firstUser?._id.toString();
   const secondUser = await User.findById(secondUserId);
   if (!secondUser) {
@@ -245,9 +257,8 @@ export const UserService = {
   getSingleUser,
   updateMe,
   updateProfilePicture,
-  updateCoverPicture,
   getAllUsers,
-  manageFollow,
+  manageFollowing,
   updateUserRole,
   deleteUser,
 };

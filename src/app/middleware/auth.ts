@@ -18,7 +18,6 @@ import { User } from '../modules/user/user.model';
 const auth = (userWithPassword: boolean, ...requiredRoles: TUserRoles[]) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const token = (req?.headers?.authorization as string)?.split(' ')[1];
-
     if (!token) {
       throw new AppError(httpStatus.UNAUTHORIZED, 'Token is missing!');
     }

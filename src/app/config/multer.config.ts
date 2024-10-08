@@ -5,7 +5,7 @@ import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import { cloudinaryUpload } from './cloudinary.config';
 
 const removeExtension = (filename: string) => {
-  return filename.split('.').slice(0, -1).join('.');
+  return filename.split('.').slice(0, -1).join('.').trim();
 };
 
 const storage = new CloudinaryStorage({

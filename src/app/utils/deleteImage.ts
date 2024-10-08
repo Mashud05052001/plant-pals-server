@@ -41,3 +41,39 @@ export const deleteSingleImageFromCloudinary = (file: TImageFile) => {
     );
   });
 };
+
+export const deleteMultipleImagesFromCloudinaryUsingDirectFile = (
+  fileNames: string[],
+) => {
+  return new Promise((resolve, reject) => {
+    cloudinaryUpload.api.delete_resources(
+      fileNames,
+      { resource_type: 'image' },
+      (error, result) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(result);
+        }
+      },
+    );
+  });
+};
+
+export const deleteSingleImageFromCloudinaryUsingDirectFile = (
+  fileName: string,
+) => {
+  return new Promise((resolve, reject) => {
+    cloudinaryUpload.api.delete_resources(
+      [fileName],
+      { resource_type: 'image' },
+      (error, result) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(result);
+        }
+      },
+    );
+  });
+};

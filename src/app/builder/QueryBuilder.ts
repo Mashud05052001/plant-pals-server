@@ -78,7 +78,7 @@ class QueryBuilder<T> {
       for (const item in copyQuery) {
         const value = copyQuery[item] as string;
         query[item] = {
-          $in: value.includes(',') ? value.split(',') : value,
+          $in: value.includes(',') ? value.split(',') : [value],
         };
       }
       this.modelQuery = this.modelQuery.find(query).sort(sortFields);
@@ -94,7 +94,7 @@ class QueryBuilder<T> {
   sort() {
     if (this.query?.sort) {
       const sort = this.query.sort as string;
-      const sortQuery = sort.includes(',') ? sort.split(',').join(' ') : sort;
+      const sortQuery = sort.split(',').join(' ');
       this.modelQuery = this.modelQuery.sort(sortQuery);
     }
     return this;
@@ -108,6 +108,7 @@ class QueryBuilder<T> {
   fields() {
     if (this.query?.fields) {
       const fields = this.query.fields as string;
+
       const fieldsQuery = fields.includes(',')
         ? fields.split(',').join(' ')
         : fields;

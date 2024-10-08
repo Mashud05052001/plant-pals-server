@@ -56,6 +56,7 @@ const accessTokenValidationSchema = z.object({
     }),
   }),
 });
+
 const forgetPasswordValidationSchema = z.object({
   body: z.object({
     email: z
@@ -63,6 +64,7 @@ const forgetPasswordValidationSchema = z.object({
       .email({ message: 'Provide a valid email' }),
   }),
 });
+
 const checkResetCodeValidationSchema = z.object({
   body: z.object({
     code: z
@@ -74,6 +76,7 @@ const checkResetCodeValidationSchema = z.object({
       .email({ message: 'Provide a valid email' }),
   }),
 });
+
 const resetPasswordValidationSchema = z.object({
   body: z.object({
     code: z

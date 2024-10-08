@@ -31,10 +31,6 @@ const userSchema = new Schema<TUser, TUserMethods>(
       type: String,
       default: '',
     },
-    coverPicture: {
-      type: String,
-      default: '',
-    },
     myPosts: {
       type: [Schema.Types.ObjectId],
       ref: 'Post',

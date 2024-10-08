@@ -45,8 +45,9 @@ router.post(
 
 router.post(
   '/favourite/:id',
+  validateRequest(PostValidation.favouritePostValidationSchema),
   auth(false, 'ADMIN', 'USER'),
-  PostController.favouritePost,
+  PostController.handleFavouritePosts,
 );
 
 export const PostRoutes = router;

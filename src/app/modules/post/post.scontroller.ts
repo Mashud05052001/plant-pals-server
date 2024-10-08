@@ -1,8 +1,8 @@
 import httpStatus from 'http-status';
+import { TImageFiles } from '../../interface/image.interface';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import { PostService } from './post.service';
-import { TImageFiles } from '../../interface/image.interface';
 
 const createPost = catchAsync(async (req, res) => {
   const result = await PostService.createPost(
@@ -70,16 +70,18 @@ const manageVoating = catchAsync(async (req, res) => {
     data: result,
   });
 });
-const favouritePost = catchAsync(async (req, res) => {
-  const { result, message } = await PostService.favouritePost(
+
+const handleFavouritePosts = catchAsync(async (req, res) => {
+  const message = await PostService.handleFavouritePost(
     req?.dbUser,
     req?.params.id,
+    req?.body.value,
   );
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: message,
-    data: result,
+    data: message,
   });
 });
 
@@ -90,5 +92,5 @@ export const PostController = {
   updatePost,
   deletePost,
   manageVoating,
-  favouritePost,
+  handleFavouritePosts,
 };

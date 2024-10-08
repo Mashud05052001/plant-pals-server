@@ -14,13 +14,16 @@ router.post(
 );
 
 router.get('/', CategoryController.getAllCategories);
+
 router.patch(
   '/:id',
   validateRequest(CategoryValidation.createCategoryValidationSchema),
   auth(false, 'ADMIN'),
   CategoryController.updateCategory,
 );
+
 router.delete('/:id', auth(false, 'ADMIN'), CategoryController.deleteCategory);
+
 router.delete(
   '/',
   auth(false, 'ADMIN'),
