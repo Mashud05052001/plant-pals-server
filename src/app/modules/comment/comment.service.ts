@@ -4,6 +4,7 @@ import { Post } from '../post/post.model';
 import { TUserResponse } from '../user/user.interface';
 import { TCreateComment, TEditComment } from './comment.interface';
 import { Comments } from './comment.model';
+import mongoose from 'mongoose';
 
 const createComment = async (
   userInfo: TUserResponse,
@@ -13,8 +14,34 @@ const createComment = async (
   if (!postExist) {
     throw new AppError(httpStatus.NOT_FOUND, 'This post is not found');
   }
-  const result = await Comments.create({ ...payload, user: userInfo?._id });
-  return result;
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const result = await Comments.create(
+      [{ ...payload, user: userInfo?._id }],
+      { session, new: true },
+    );
+
+    await Post.findByIdAndUpdate(
+      payload?.post,
+      { $push: { comments: result[0]._id } },
+      { session, new: true },
+    );
+    const result2 = await Comments.findById(result[0]._id)
+      .populate({
+        path: 'user',
+        select: 'name email _id profilePicture isVerified',
+      })
+      .session(session);
+    await session.commitTransaction();
+    await session.endSession();
+    return result2;
+  } catch (error) {
+    console.log(error);
+    await session.abortTransaction();
+    await session.endSession();
+    throw new AppError(httpStatus.CONFLICT, 'Failed to create comments');
+  }
 };
 
 const getAllCommetsOfAPost = async (postId: string) => {
@@ -22,7 +49,7 @@ const getAllCommetsOfAPost = async (postId: string) => {
     .sort('-createdAt')
     .populate({
       path: 'user',
-      select: 'name email _id',
+      select: 'name email _id profilePicture isVerified',
     })
     .select('-__v');
   return result;

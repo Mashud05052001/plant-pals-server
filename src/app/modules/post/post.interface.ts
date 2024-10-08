@@ -16,7 +16,6 @@ export type TPost = {
   voatingUsers: TVoatingUsers[];
   comments: Types.ObjectId[];
   isPremium: boolean;
-  isVerified: boolean;
 };
 
 export type TVoatingPayload = {

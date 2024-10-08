@@ -76,17 +76,17 @@ const getAllPosts = async (query: Record<string, unknown>) => {
       })
       .populate({
         path: 'user',
-        select: 'name email _id role profilePicture favouritePosts',
+        select: 'name email _id role profilePicture favouritePosts isVerified',
       });
   } else {
     query.fields = 'images';
   }
   const postQuery = new QueryBuilder(baseQuery, query)
-    .search(['description', 'category'], 'upvote')
+    .search(['title', 'description'], 'upvote')
     .fields()
     .filter('upvote')
-    .sort()
-    .paginate();
+    .paginate()
+    .sort();
 
   const result = await postQuery.modelQuery;
   const meta = await postQuery.countTotal();

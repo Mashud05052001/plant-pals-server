@@ -73,7 +73,7 @@ class QueryBuilder<T> {
     const excludeFields = ['searchTerm', 'page', 'limit', 'sort', 'fields'];
 
     excludeFields.forEach((field) => delete copyQuery[field]);
-    if (copyQuery) {
+    if (Object.keys(copyQuery).length) {
       const query: Record<string, unknown> = {};
       for (const item in copyQuery) {
         const value = copyQuery[item] as string;
