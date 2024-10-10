@@ -62,7 +62,7 @@ const updateUserRole = async (decodedUser: TJwtPayload, userId: string) => {
 // Any user & admin can visit another user profile & show
 const getSingleUser = async (userId: string) => {
   const userInfo = await User.findById(userId)
-    .select('-favouritePosts -_id')
+    .select('-favouritePosts')
     .populate('myPosts');
   if (!userInfo) {
     throw new AppError(httpStatus.NOT_FOUND, 'User not found');

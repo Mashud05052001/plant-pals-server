@@ -55,6 +55,7 @@ const userSchema = new Schema<TUser, TUserMethods>(
       type: Boolean,
       default: false,
     },
+
     verifiedValidity: {
       type: Date,
     },

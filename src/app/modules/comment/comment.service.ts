@@ -90,10 +90,27 @@ const deleteComment = async (userInfo: TUserResponse, commentId: string) => {
       'You cannot delete others comment',
     );
   }
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    await Comments.findByIdAndDelete(commentId, { session });
+    await Post.findByIdAndUpdate(
+      comment?.post,
+      {
+        $pull: { comments: commentId },
+      },
+      { session, new: true },
+    );
 
-  await Comments.findByIdAndDelete(commentId);
-
-  return { message: 'Comment deleted successfully' };
+    await session.commitTransaction();
+    await session.endSession();
+    return { message: 'Comment deleted successfully' };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw new AppError(httpStatus.CONFLICT, 'Failed to delete the comment');
+  }
 };
 
 export const CommentsService = {

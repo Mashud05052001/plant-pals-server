@@ -32,7 +32,9 @@ const registerUser = async (payload: TRegisterUser) => {
     name: payload?.name,
     email: payload?.email,
     role: 'USER',
+    profilePicture: '',
   };
+
   const accessToken = jwtHelper.createJwtAccessToken(jwtPayload);
   const refreshToken = jwtHelper.createJwtRefreshToken(jwtPayload);
 
@@ -59,6 +61,7 @@ const loginUser = async (payload: TLoginUser) => {
     name: user?.name,
     email: user?.email,
     role: user?.role,
+    profilePicture: user?.profilePicture || '',
   };
   const accessToken = jwtHelper.createJwtAccessToken(jwtPayload);
   const refreshToken = jwtHelper?.createJwtRefreshToken(jwtPayload);
@@ -113,6 +116,7 @@ const accessToken = async (refreshToken: string) => {
     name: user?.name,
     email: user?.email,
     role: user?.role,
+    profilePicture: user?.profilePicture || '',
   };
   const accessToken = jwtHelper.createJwtAccessToken(jwtPayload);
 

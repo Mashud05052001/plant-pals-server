@@ -98,7 +98,8 @@ const getAllPosts = async (query: Record<string, unknown>) => {
 };
 
 const getSinglePost = async (postId: string) => {
-  const result = await Post.findById(postId).populate('category');
+  const result = await Post.findById(postId).populate('category user');
+
   if (!result) {
     throw new AppError(
       httpStatus.NOT_FOUND,
