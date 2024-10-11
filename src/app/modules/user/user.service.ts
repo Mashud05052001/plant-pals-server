@@ -192,7 +192,12 @@ const getAdminDashboardData = async (year: number = moment().year()) => {
 const getSingleUser = async (userId: string) => {
   const userInfo = await User.findById(userId)
     .select('-favouritePosts')
-    .populate('myPosts');
+    .populate({
+      path: 'myPosts',
+      populate: {
+        path: 'category',
+      },
+    });
   if (!userInfo) {
     throw new AppError(httpStatus.NOT_FOUND, 'User not found');
   }

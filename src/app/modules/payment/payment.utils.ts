@@ -45,7 +45,8 @@ export const initiatePayment = async (
   const transactionId = `T-${userName}${randomValue}:${timestamp}`.trim();
   const successUrl = `${config.backend_api}/payment/success?transactionId=${transactionId}&paymentId=${paymentId}&userId=${userId}`;
   const failedUrl = `${config.backend_api}/payment/failed?transactionId=${transactionId}&paymentId=${paymentId}`;
-
+  // const cancel_url = `${cancleUrl}&paymentId=${paymentId}`;
+  const cancel_url = cancleUrl;
   const paymentData = {
     store_id: storeId,
     signature_key: signatureKey,
@@ -57,7 +58,7 @@ export const initiatePayment = async (
     cus_phone: customerPhone,
     success_url: successUrl,
     fail_url: failedUrl,
-    cancel_url: `${cancleUrl}&paymentId=${paymentId}`,
+    cancel_url: cancel_url,
     type: 'json',
     desc: `Payment Date : ${moment(new Date()).format('DD-MM-YYYY LT')}`,
   };

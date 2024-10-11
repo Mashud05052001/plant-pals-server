@@ -12,7 +12,11 @@ const app: Application = express();
 // parser
 app.use(
   cors({
-    origin: ['http://localhost:5173', 'http://localhost:3000'],
+    origin: [
+      'https://plant-pals-client.vercel.app',
+      'http://localhost:5173',
+      'http://localhost:3000',
+    ],
     credentials: true,
   }),
 );
