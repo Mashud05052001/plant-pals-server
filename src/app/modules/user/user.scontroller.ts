@@ -3,6 +3,7 @@ import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import { UserService } from './user.service';
 import { TImageFile } from '../../interface/image.interface';
+import moment from 'moment';
 
 // ADMIN Only
 const getAllUsers = catchAsync(async (req, res) => {
@@ -20,6 +21,17 @@ const updateUserRole = catchAsync(async (req, res) => {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Role changed successfully',
+    data: result,
+  });
+});
+
+const getAdminDashboardData = catchAsync(async (req, res) => {
+  const year = Number(req.query?.year) || moment().year();
+  const result = await UserService.getAdminDashboardData(year);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Dashboard record retrived successfully',
     data: result,
   });
 });
@@ -101,4 +113,5 @@ export const UserController = {
   manageFollowing,
   updateUserRole,
   deleteUser,
+  getAdminDashboardData,
 };

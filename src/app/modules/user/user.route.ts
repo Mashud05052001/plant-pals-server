@@ -11,16 +11,26 @@ const router = Router();
 
 // Only ADMIN
 router.get('/all', auth(false, 'ADMIN'), UserController.getAllUsers);
-// Authorized Person Accessable
-router.get('/me', auth(false, 'ADMIN', 'USER'), UserController.getMe);
-// Any user accessable (without login also)
-router.get('/:id', UserController.getSingleUser);
+
+router.get(
+  '/dashboard',
+  auth(false, 'ADMIN'),
+  UserController.getAdminDashboardData,
+);
 
 router.patch(
   '/change-role/:id',
   auth(false, 'ADMIN'),
   UserController.updateUserRole,
 );
+
+// router.get('/')
+
+// Authorized Person Accessable
+router.get('/me', auth(false, 'ADMIN', 'USER'), UserController.getMe);
+
+// Any user accessable (without login also)
+router.get('/:id', UserController.getSingleUser);
 
 router.patch(
   '/update-me',

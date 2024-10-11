@@ -9,6 +9,8 @@ import { Comments } from '../comment/comment.model';
 import { Post } from '../post/post.model';
 import { TUpdateUserData, TUserResponse } from './user.interface';
 import { User } from './user.model';
+import moment from 'moment';
+import { Payment } from '../payment/payment.model';
 
 // ADMIN Only
 const getAllUsers = async (query: Record<string, unknown>) => {
@@ -57,6 +59,133 @@ const updateUserRole = async (decodedUser: TJwtPayload, userId: string) => {
     { new: true },
   );
   return result;
+};
+
+const getAdminDashboardData = async (year: number = moment().year()) => {
+  const currentYearStart = moment().year(year).startOf('year').toDate();
+  const currentYearEnd = moment().year(year).endOf('year').toDate();
+
+  const userRegistrations = await User.aggregate([
+    {
+      $match: {
+        createdAt: {
+          $gte: currentYearStart,
+          $lte: currentYearEnd,
+        },
+      },
+    },
+    {
+      $group: {
+        _id: { month: { $month: '$createdAt' } },
+        count: { $sum: 1 },
+      },
+    },
+    {
+      $sort: { '_id.month': 1 }, // Sort by month
+    },
+    {
+      $project: {
+        _id: 0,
+        month: '$_id.month',
+        count: 1,
+      },
+    },
+  ]);
+
+  const postRegistrations = await Post.aggregate([
+    {
+      $match: {
+        createdAt: {
+          $gte: currentYearStart,
+          $lte: currentYearEnd,
+        },
+      },
+    },
+    {
+      $group: {
+        _id: { month: { $month: '$createdAt' } },
+        count: { $sum: 1 },
+      },
+    },
+    {
+      $sort: { '_id.month': 1 }, // Sort by month
+    },
+    {
+      $project: {
+        _id: 0,
+        month: '$_id.month',
+        count: 1,
+      },
+    },
+  ]);
+  const paymentAggregations = await Payment.aggregate([
+    {
+      $match: {
+        createdAt: {
+          $gte: currentYearStart,
+          $lte: currentYearEnd,
+        },
+        isPaid: true,
+      },
+    },
+    {
+      $group: {
+        _id: { month: { $month: '$createdAt' } },
+        noOfPayments: { $sum: 1 },
+        totalPaymentsCollection: { $sum: '$amount' },
+      },
+    },
+    {
+      $sort: { '_id.month': 1 },
+    },
+    {
+      $project: {
+        _id: 0,
+        month: '$_id.month',
+        noOfPayments: 1,
+        totalPaymentsCollection: 1,
+      },
+    },
+  ]);
+
+  const months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
+
+  const dashboardData = months.map((month) => ({
+    month,
+    newUsers: 0,
+    newPosts: 0,
+    countPayments: 0,
+    totalPaymentsCollection: 0,
+  }));
+
+  userRegistrations.forEach(({ month, count }) => {
+    dashboardData[month - 1].newUsers = count;
+  });
+  postRegistrations.forEach(({ month, count }) => {
+    dashboardData[month - 1].newPosts = count;
+  });
+  paymentAggregations.forEach(
+    ({ month, noOfPayments, totalPaymentsCollection }) => {
+      dashboardData[month - 1].countPayments = noOfPayments;
+      dashboardData[month - 1].totalPaymentsCollection =
+        totalPaymentsCollection;
+    },
+  );
+
+  return dashboardData;
 };
 
 // Any user & admin can visit another user profile & show
@@ -261,4 +390,5 @@ export const UserService = {
   manageFollowing,
   updateUserRole,
   deleteUser,
+  getAdminDashboardData,
 };
