@@ -118,3 +118,56 @@ export const generatePasswordResetEmail = (
     </html>
     `;
 };
+
+export const generateSendContactEmail = (
+  userName: string,
+  userEmail: string,
+  message: string,
+) => {
+  return `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Contact Form Message</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+          }
+  
+          p {
+            color: #000000;
+            font-size: 16px;
+            margin-bottom: 10px;
+          }
+  
+          strong {
+            font-weight: bold;
+          }
+  
+          section {
+            background-color: #f0f0f0;
+            padding: 30px 40px;
+            margin-bottom: 10px;
+          }
+  
+          div{
+            padding : 0 20px;
+          }
+        </style>
+      </head>
+      <body>
+        <section>
+          <p>User Name: <strong>${userName}</strong></p>
+          <p>User Email: <strong>${userEmail}</strong></p>
+          <p>Message:</p>
+          <div>
+            <p>${message}</p>
+          </div>
+        </section>
+      </body>
+      </html>
+    `;
+};

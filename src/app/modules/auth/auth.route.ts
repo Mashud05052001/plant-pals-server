@@ -7,6 +7,7 @@ import validateRequest, {
 import { AuthValidation } from './auth.validation';
 
 const router = Router();
+
 /*
 Auth
 1. Registration           '/register'
@@ -59,6 +60,12 @@ router.post(
   '/reset-password',
   validateRequest(AuthValidation.resetPasswordValidationSchema),
   AuthController.resetPassword,
+);
+
+router.post(
+  '/send-contact-email',
+  validateRequest(AuthValidation.sendEmailValidationSchem),
+  AuthController.sendContactEmail,
 );
 
 export const AuthRoutes = router;

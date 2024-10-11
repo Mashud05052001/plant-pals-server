@@ -93,6 +93,25 @@ const resetPasswordValidationSchema = z.object({
   }),
 });
 
+const sendEmailValidationSchem = z.object({
+  body: z.object({
+    userName: z
+      .string()
+      .min(3, { message: '*Name must be at least 3 characters' }),
+    userEmail: z
+      .string()
+      .email('Invalid email format')
+      .nonempty('User email is required'),
+    sendToEmail: z
+      .string()
+      .email('Invalid email format')
+      .nonempty('Recipient email is required'),
+    message: z
+      .string()
+      .min(3, { message: '*Message must be at least 5 characters' }),
+  }),
+});
+
 export const AuthValidation = {
   registerValidationSchema,
   loginValidationSchema,
@@ -101,4 +120,5 @@ export const AuthValidation = {
   forgetPasswordValidationSchema,
   checkResetCodeValidationSchema,
   resetPasswordValidationSchema,
+  sendEmailValidationSchem,
 };

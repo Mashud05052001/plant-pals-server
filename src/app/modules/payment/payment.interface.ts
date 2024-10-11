@@ -14,4 +14,5 @@ export type TPayment = {
   user: Types.ObjectId;
   amount: number;
   isPaid: boolean;
+  transactionId?: string;
 };

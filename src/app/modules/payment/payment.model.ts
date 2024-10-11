@@ -16,6 +16,10 @@ const paymentSchema = new Schema<TPayment>(
       type: String,
       required: true,
     },
+    transactionId: {
+      type: String,
+      default: '',
+    },
     isPaid: {
       type: Boolean,
       default: false,

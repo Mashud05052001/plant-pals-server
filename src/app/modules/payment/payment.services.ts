@@ -62,7 +62,7 @@ const confirmationPayment = catchAsync(async (req, res) => {
       session.startTransaction();
       await Payment.findByIdAndUpdate(
         paymentId,
-        { isPaid: true },
+        { isPaid: true, transactionId: transactionId },
         { new: true },
       ).session(session);
       await User.findByIdAndUpdate(

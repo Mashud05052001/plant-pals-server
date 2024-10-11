@@ -14,8 +14,12 @@ import {
   TUserResponse,
 } from '../user/user.interface';
 import { User } from '../user/user.model';
-import { generatePasswordResetEmail } from './auth.constant';
+import {
+  generatePasswordResetEmail,
+  generateSendContactEmail,
+} from './auth.constant';
 import { generateSixDigitCode } from './auth.utils';
+import { TSendContactEmail } from './auth.interface';
 
 const registerUser = async (payload: TRegisterUser) => {
   const user = await User.findUser(payload.email, false);
@@ -246,6 +250,19 @@ const resetPassword = async (payload: TResetPassword) => {
   return 'Password reset successful. Please login to continue';
 };
 
+const sendContactEmail = async (payload: TSendContactEmail) => {
+  const { message, sendToEmail, userEmail, userName } = payload;
+  const html = generateSendContactEmail(userName, userEmail, message);
+  await EmailHelper.sendEmail(
+    sendToEmail,
+    html,
+    'normal',
+    userEmail,
+    'PlantPals Contact Us',
+  );
+  return 'Email send successfull';
+};
+
 export const AuthService = {
   registerUser,
   loginUser,
@@ -254,4 +271,5 @@ export const AuthService = {
   forgetPassword,
   checkResetCode,
   resetPassword,
+  sendContactEmail,
 };
